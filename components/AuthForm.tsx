@@ -8,6 +8,13 @@ interface AuthFormProps {
   onLogin: (token: string) => void;
 }
 
+/**
+ * A form for user authentication.
+ * It allows users to log in with their email and password.
+ * @param {AuthFormProps} props The component props.
+ * @param {function} props.onLogin A callback function that is called when the user successfully logs in.
+ * @returns {JSX.Element} The rendered authentication form.
+ */
 export const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

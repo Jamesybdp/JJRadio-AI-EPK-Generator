@@ -8,6 +8,15 @@ interface ResultCardProps {
   isSub?: boolean;
 }
 
+/**
+ * A card component to display a result with a title and content.
+ * It also includes a copy-to-clipboard functionality.
+ * @param {ResultCardProps} props The component props.
+ * @param {string} props.title The title of the result card.
+ * @param {string} props.content The content to be displayed in the card.
+ * @param {boolean} [props.isSub=false] Whether the card is a sub-card.
+ * @returns {JSX.Element} The rendered result card.
+ */
 export const ResultCard: React.FC<ResultCardProps> = ({ title, content, isSub = false }) => {
     const [copied, setCopied] = useState(false);
 

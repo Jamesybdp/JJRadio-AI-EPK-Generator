@@ -9,6 +9,11 @@ import { Loader } from './components/Loader';
 import { SparklesIcon, AlienIcon, DownloadIcon } from './components/icons';
 import { AuthForm } from './components/AuthForm';
 
+/**
+ * The main application component.
+ * It handles the state and logic for the EPK generator.
+ * @returns {JSX.Element} The rendered application.
+ */
 const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('jjradio_token'));
   const [formData, setFormData] = useState<ArtistInput>({
@@ -42,17 +47,28 @@ const App: React.FC = () => {
     };
   }, [artistImageUrl]);
 
+  /**
+   * Handles the user's login.
+   * @param {string} newToken The new authentication token.
+   */
   const handleLogin = (newToken: string) => {
     localStorage.setItem('jjradio_token', newToken);
     setToken(newToken);
   };
 
+  /**
+   * Handles the user's logout.
+   */
   const handleLogout = () => {
     localStorage.removeItem('jjradio_token');
     setToken(null);
     setEpkOutput(null); // Clear previous results on logout
   };
 
+  /**
+   * Handles changes to the form fields.
+   * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>} e The event object.
+   */
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
@@ -67,6 +83,10 @@ const App: React.FC = () => {
     }
   };
 
+  /**
+   * Handles changes to the artist image input.
+   * @param {React.ChangeEvent<HTMLInputElement>} e The event object.
+   */
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -79,6 +99,10 @@ const App: React.FC = () => {
   };
 
 
+  /**
+   * Handles the submission of the EPK generation form.
+   * @param {React.FormEvent} e The event object.
+   */
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.lyrics_text || !formData.artist_name || !formData.track_title) {
@@ -111,6 +135,9 @@ const App: React.FC = () => {
     }
   }, [formData, token]);
   
+  /**
+   * Handles the download of the generated EPK as a PDF.
+   */
   const handleDownload = async () => {
     if (!epkOutput) return;
 
