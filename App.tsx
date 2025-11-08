@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { generateEpk, downloadEpkAsPdf } from './services/geminiService';
+import { generateEpk, downloadEpkAsPdf } from './services/apiService';
 import type { ArtistInput, EpkOutput } from './types';
 import { InputField } from './components/InputField';
 import { TextAreaField } from './components/TextAreaField';
