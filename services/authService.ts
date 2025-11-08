@@ -1,4 +1,11 @@
 
+/**
+ * Authenticates a user with their email and password.
+ * @param email The user's email address.
+ * @param password The user's password.
+ * @returns A promise that resolves with an object containing the authentication token.
+ * @throws An error if the login request fails, if the server response is not ok, or if no token is provided.
+ */
 export const login = async (email: string, password: string): Promise<{ token: string }> => {
     try {
         const response = await fetch('/api/login', {

@@ -1,6 +1,10 @@
 
 import React from 'react';
 
+/**
+ * A loader component to indicate that content is being loaded.
+ * @returns {JSX.Element} The rendered loader.
+ */
 export const Loader: React.FC = () => {
     return (
         <div className="flex flex-col items-center justify-center h-full text-center">

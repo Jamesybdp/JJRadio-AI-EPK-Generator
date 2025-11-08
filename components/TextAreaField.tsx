@@ -6,6 +6,13 @@ interface TextAreaFieldProps extends React.TextareaHTMLAttributes<HTMLTextAreaEl
   name: string;
 }
 
+/**
+ * A reusable text area field component.
+ * @param {TextAreaFieldProps} props The component props.
+ * @param {string} props.label The label for the text area field.
+ * @param {string} props.name The name of the text area field.
+ * @returns {JSX.Element} The rendered text area field.
+ */
 export const TextAreaField: React.FC<TextAreaFieldProps> = ({ label, name, ...props }) => {
   return (
     <div>

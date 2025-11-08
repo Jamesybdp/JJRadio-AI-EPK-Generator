@@ -1,6 +1,13 @@
 
 import type { ArtistInput, EpkOutput } from '../types';
 
+/**
+ * Generates an Electronic Press Kit (EPK) by sending artist data to the backend.
+ * @param data The artist input data.
+ * @param token The authentication token.
+ * @returns A promise that resolves with the generated EPK data.
+ * @throws An error if the authentication token is missing, if the request fails, or if the server response is not ok.
+ */
 export const generateEpk = async (data: ArtistInput, token: string | null): Promise<EpkOutput> => {
     if (!token) {
         throw new Error('401: Authentication token is missing.');
@@ -37,6 +44,13 @@ export const generateEpk = async (data: ArtistInput, token: string | null): Prom
 };
 
 
+/**
+ * Downloads the generated EPK as a PDF file.
+ * @param epkData The EPK data to be included in the PDF.
+ * @param token The authentication token.
+ * @returns A promise that resolves when the download is initiated.
+ * @throws An error if the authentication token is missing or if the PDF generation fails on the server.
+ */
 export const downloadEpkAsPdf = async (epkData: EpkOutput, token: string | null): Promise<void> => {
     if (!token) {
         throw new Error('401: Authentication token is missing.');

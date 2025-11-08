@@ -6,6 +6,13 @@ interface InputFieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   name: string;
 }
 
+/**
+ * A reusable input field component.
+ * @param {InputFieldProps} props The component props.
+ * @param {string} props.label The label for the input field.
+ * @param {string} props.name The name of the input field.
+ * @returns {JSX.Element} The rendered input field.
+ */
 export const InputField: React.FC<InputFieldProps> = ({ label, name, ...props }) => {
   return (
     <div>
