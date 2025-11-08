@@ -1,6 +1,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { generateEpk } from './services/geminiService';
+import { AuthGate } from './components/AuthGate';
+import { generateEpk, getAuthToken, UnauthorizedError, clearAuthToken } from './services/geminiService';
 import type { ArtistInput, EpkOutput } from './types';
 import { InputField } from './components/InputField';
 import { TextAreaField } from './components/TextAreaField';
@@ -28,6 +29,8 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [epkOutput, setEpkOutput] = useState<EpkOutput | null>(null);
+  const [authToken, setAuthTokenState] = useState<string | null>(() => getAuthToken());
+  const [authMessage, setAuthMessage] = useState<string | null>(null);
 
   useEffect(() => {
     // Clean up the object URL to avoid memory leaks when the component unmounts or the URL changes.
@@ -37,6 +40,28 @@ const App: React.FC = () => {
       }
     };
   }, [artistImageUrl]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+    const handleStorage = () => {
+      setAuthTokenState(getAuthToken());
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
+  }, []);
+
+  const handleAuthenticated = useCallback((token: string) => {
+    setAuthTokenState(token);
+    setAuthMessage(null);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    clearAuthToken();
+    setAuthTokenState(null);
+    setAuthMessage('You have been logged out. Please authenticate to continue.');
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -66,6 +91,11 @@ const App: React.FC = () => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!authToken) {
+        setError('Authentication required. Please log in to generate an EPK.');
+        setAuthTokenState(getAuthToken());
+        return;
+    }
     if (!formData.lyrics_text || !formData.artist_name || !formData.track_title) {
         setError('Artist Name, Track Title, and Lyrics are required to fuel the cultural engine.');
         return;
@@ -80,11 +110,21 @@ const App: React.FC = () => {
       console.log("Feedback Loop Data (for internal use):", result.feedback_loop_data);
     } catch (err) {
       console.error(err);
+      if (err instanceof UnauthorizedError) {
+        setAuthTokenState(null);
+        setAuthMessage('Your session has expired. Please log in again to continue.');
+        setError(null);
+        return;
+      }
       setError('The connection to the cultural engine failed. Please check your inputs and try again.');
     } finally {
       setLoading(false);
     }
-  }, [formData]);
+  }, [authToken, formData]);
+
+  if (!authToken) {
+    return <AuthGate onAuthenticated={handleAuthenticated} message={authMessage} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 p-4 sm:p-6 md:p-8">
@@ -103,6 +143,15 @@ const App: React.FC = () => {
 
         <main className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 backdrop-blur-sm">
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-sm font-medium text-purple-300 hover:text-purple-100"
+              >
+                Log out
+              </button>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-6">
                 <h2 className="font-orbitron text-2xl font-bold text-cyan-400 border-b-2 border-cyan-400/30 pb-2">Input Transmission</h2>
                 <InputField label="Artist Name" name="artist_name" value={formData.artist_name} onChange={handleChange} required />
