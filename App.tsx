@@ -7,8 +7,10 @@ import { TextAreaField } from './components/TextAreaField';
 import { ResultCard } from './components/ResultCard';
 import { Loader } from './components/Loader';
 import { SparklesIcon, AlienIcon } from './components/icons';
+import { AuthForm } from './components/AuthForm';
 
 const App: React.FC = () => {
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('jjradio_token'));
   const [formData, setFormData] = useState<ArtistInput>({
     artist_name: '',
     track_title: '',
@@ -37,6 +39,16 @@ const App: React.FC = () => {
       }
     };
   }, [artistImageUrl]);
+
+  const handleLogin = (newToken: string) => {
+    localStorage.setItem('jjradio_token', newToken);
+    setToken(newToken);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('jjradio_token');
+    setToken(null);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -75,21 +87,42 @@ const App: React.FC = () => {
     setEpkOutput(null);
 
     try {
-      const result = await generateEpk(formData);
+      const result = await generateEpk(formData, token);
       setEpkOutput(result);
       console.log("Feedback Loop Data (for internal use):", result.feedback_loop_data);
     } catch (err) {
       console.error(err);
-      setError('The connection to the cultural engine failed. Please check your inputs and try again.');
+      if (err instanceof Error) {
+        if (err.message.includes('401') || err.message.includes('403')) {
+            setError('Authentication failed. Your session may have expired. Please log in again.');
+            handleLogout();
+        } else {
+            setError('The connection to the cultural engine failed. Please check your inputs and try again.');
+        }
+      } else {
+        setError('An unknown error occurred.');
+      }
     } finally {
       setLoading(false);
     }
-  }, [formData]);
+  }, [formData, token]);
+
+  if (!token) {
+    return <AuthForm onLogin={handleLogin} />;
+  }
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 p-4 sm:p-6 md:p-8">
       <div className="max-w-6xl mx-auto">
-        <header className="text-center mb-8">
+        <header className="text-center mb-8 relative">
+          <div className="absolute top-0 right-0">
+            <button
+              onClick={handleLogout}
+              className="font-orbitron text-sm bg-gray-700 hover:bg-red-800/50 text-gray-300 py-2 px-4 rounded-md transition-colors duration-300 border border-gray-600 hover:border-red-700"
+            >
+              Logout
+            </button>
+          </div>
           <div className="inline-block bg-purple-500/20 p-4 rounded-full mb-4 border border-purple-400/50">
             <AlienIcon className="w-12 h-12 text-purple-400" />
           </div>

@@ -1,17 +1,23 @@
-
 import type { ArtistInput, EpkOutput } from '../types';
 
-export const generateEpk = async (data: ArtistInput): Promise<EpkOutput> => {
+export const generateEpk = async (data: ArtistInput, token: string | null): Promise<EpkOutput> => {
+    if (!token) {
+        throw new Error('401: Authentication token is missing.');
+    }
+
     try {
-        // This function now calls a backend API endpoint, which will securely handle the call to the Gemini API.
-        // This aligns with the architectural vision of moving logic and API keys to the server.
         const response = await fetch('/api/generate-epk', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify(data),
         });
+
+        if (response.status === 401 || response.status === 403) {
+            throw new Error(`${response.status}: Authentication failed. Please log in again.`);
+        }
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => ({ message: 'An unknown server error occurred.' }));
@@ -20,6 +26,7 @@ export const generateEpk = async (data: ArtistInput): Promise<EpkOutput> => {
 
         return await response.json() as EpkOutput;
 
+    // FIX: Added curly braces to define the catch block scope, which resolves the undefined 'error' variable issue.
     } catch (error) {
         console.error("Error calling backend service:", error);
         // Re-throw the error so it can be caught by the component.
