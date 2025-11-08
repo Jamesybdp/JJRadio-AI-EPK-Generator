@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  passwordHash String
+  createdAt    DateTime      @default(now())
+  artistInputs ArtistInput[]
+  epkOutputs   EpkOutput[]
+}
+
+model ArtistInput {
+  id                        String     @id @default(cuid())
+  artistName                String
+  trackTitle                String
+  email                     String
+  genre                     String
+  vibeTags                  String[]
+  lyricsText                String
+  artistIntent              String
+  culturalRefsExplained     String
+  problemSolvingConnection  String
+  streamingLinks            String[]
+  syncSubmissionLink        String
+  grantApplicationLink      String
+  createdAt                 DateTime   @default(now())
+  user                      User       @relation(fields: [userId], references: [id])
+  userId                    String
+  epkOutput                 EpkOutput?
+}
+
+model EpkOutput {
+  id                  String      @id @default(cuid())
+  status              String
+  filenameSlug        String
+  deliverables        Json
+  submissionGuidance  Json
+  feedbackLoopData    Json
+  createdAt           DateTime    @default(now())
+  user                User        @relation(fields: [userId], references: [id])
+  userId              String
+  artistInput         ArtistInput @relation(fields: [artistInputId], references: [id])
+  artistInputId       String      @unique
+}

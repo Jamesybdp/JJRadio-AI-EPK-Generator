@@ -1,0 +1,31 @@
+{
+  "status": "EPK_READY",
+  "filename_slug": "test-artist-test-track",
+  "deliverables": {
+    "artist_bio": "A generated artist bio.",
+    "one_sheet_summary": "A generated summary.",
+    "social_captions": {
+      "instagram": "Instagram caption",
+      "tiktok": "TikTok caption",
+      "x_twitter": "X caption"
+    },
+    "cultural_dna_report": "Generated cultural DNA report."
+  },
+  "submission_guidance": {
+    "strategic_opportunities": [
+      {
+        "type": "Sync Library",
+        "name": "Def Jam Africa A&R",
+        "reasoning": "Example reasoning."
+      }
+    ],
+    "email_pitch_blurb": "Generated pitch blurb."
+  },
+  "feedback_loop_data": {
+    "ai_confidence_score": 0.85,
+    "training_data_tags": [
+      "demo"
+    ],
+    "lyric_radio_clean": true
+  }
+}

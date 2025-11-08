@@ -1,12 +1,11 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
-import { generateEpk } from './services/geminiService';
+import { generateEpk, downloadEpkAsPdf } from './services/apiService';
 import type { ArtistInput, EpkOutput } from './types';
 import { InputField } from './components/InputField';
 import { TextAreaField } from './components/TextAreaField';
 import { ResultCard } from './components/ResultCard';
 import { Loader } from './components/Loader';
-import { SparklesIcon, AlienIcon } from './components/icons';
+import { SparklesIcon, AlienIcon, DownloadIcon } from './components/icons';
 
 const App: React.FC = () => {
   const [formData, setFormData] = useState<ArtistInput>({
@@ -26,6 +25,7 @@ const App: React.FC = () => {
   const [artistImage, setArtistImage] = useState<File | null>(null);
   const [artistImageUrl, setArtistImageUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [downloading, setDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [epkOutput, setEpkOutput] = useState<EpkOutput | null>(null);
 
@@ -80,11 +80,30 @@ const App: React.FC = () => {
       console.log("Feedback Loop Data (for internal use):", result.feedback_loop_data);
     } catch (err) {
       console.error(err);
-      setError('The Alien Intelligence encountered a cosmic interference. Please check your inputs and try again.');
+      const message = err instanceof Error ? err.message : 'The Alien Intelligence encountered a cosmic interference. Please check your inputs and try again.';
+      setError(message);
     } finally {
       setLoading(false);
     }
   }, [formData]);
+
+  const handleDownload = useCallback(async () => {
+    if (!epkOutput) {
+      return;
+    }
+
+    try {
+      setDownloading(true);
+      setError(null);
+      await downloadEpkAsPdf(epkOutput.filename_slug);
+    } catch (err) {
+      console.error(err);
+      const message = err instanceof Error ? err.message : 'Failed to download your EPK PDF. Please try again.';
+      setError(message);
+    } finally {
+      setDownloading(false);
+    }
+  }, [epkOutput]);
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-200 p-4 sm:p-6 md:p-8">
@@ -118,7 +137,7 @@ const App: React.FC = () => {
                 <InputField label="Streaming Links (comma-separated)" name="streaming_links" value={formData.streaming_links.join(', ')} onChange={handleChange} placeholder="Spotify, YouTube, etc." />
                 <InputField label="Sync Library Submission Link" name="sync_submission_link" type="url" value={formData.sync_submission_link} onChange={handleChange} placeholder="https://example.com/submission" />
                 <InputField label="Grant Application Link" name="grant_application_link" type="url" value={formData.grant_application_link} onChange={handleChange} placeholder="https://example.com/grant-application" />
-                
+
                 <button type="submit" disabled={loading} className="w-full font-orbitron flex items-center justify-center gap-2 text-lg font-bold bg-purple-600 hover:bg-purple-700 disabled:bg-purple-900 disabled:text-gray-500 disabled:cursor-not-allowed text-white py-3 px-6 rounded-md transition-all duration-300 transform hover:scale-105">
                     {loading ? 'Analyzing...' : 'Generate EPK'}
                     {!loading && <SparklesIcon className="w-5 h-5" />}
@@ -128,7 +147,20 @@ const App: React.FC = () => {
           </div>
 
           <div className="bg-gray-800/50 p-6 rounded-lg border border-gray-700 backdrop-blur-sm">
-            <h2 className="font-orbitron text-2xl font-bold text-cyan-400 border-b-2 border-cyan-400/30 pb-2 mb-6">EPK Kit Output</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="font-orbitron text-2xl font-bold text-cyan-400 border-b-2 border-cyan-400/30 pb-2">EPK Kit Output</h2>
+              {epkOutput && (
+                <button
+                  type="button"
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="inline-flex items-center gap-2 font-orbitron text-sm font-semibold bg-cyan-500 hover:bg-cyan-600 disabled:bg-cyan-900 disabled:text-gray-400 text-gray-900 px-4 py-2 rounded-md transition-colors"
+                >
+                  <DownloadIcon className="w-4 h-4" />
+                  {downloading ? 'Preparing…' : 'Download PDF'}
+                </button>
+              )}
+            </div>
             {loading && <Loader />}
             {epkOutput && (
               <div className="space-y-6 animate-fade-in">
@@ -143,14 +175,14 @@ const App: React.FC = () => {
                 <ResultCard title="Artist Bio" content={epkOutput.deliverables.artist_bio} />
                 <ResultCard title="One-Sheet Summary" content={epkOutput.deliverables.one_sheet_summary} />
                 <ResultCard title="Cultural DNA Report" content={epkOutput.deliverables.cultural_dna_report} />
-                
+
                 <div className="space-y-4">
                     <h3 className="font-orbitron text-xl font-semibold text-cyan-300">Social Media Captions</h3>
                     <ResultCard title="Instagram" content={epkOutput.deliverables.social_captions.instagram} isSub />
                     <ResultCard title="TikTok" content={epkOutput.deliverables.social_captions.tiktok} isSub />
                     <ResultCard title="X / Twitter" content={epkOutput.deliverables.social_captions.x_twitter} isSub />
                 </div>
-                
+
                  <div className="space-y-4">
                     <h3 className="font-orbitron text-xl font-semibold text-cyan-300">Submission Guidance</h3>
                     <ResultCard title="Email Pitch Blurb" content={epkOutput.submission_guidance.email_pitch_blurb} />
