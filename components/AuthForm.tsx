@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { InputField } from './InputField';
 import { AlienIcon } from './icons';
+import { login } from '../services/authService';
 
 interface AuthFormProps {
   onLogin: (token: string) => void;
@@ -18,18 +19,16 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin }) => {
     setLoading(true);
     setError(null);
 
-    // In a real application, this would be a fetch call to a backend endpoint:
-    // e.g., fetch('/api/login', { method: 'POST', body: JSON.stringify({ email, password }) })
-    // For this prototype, we'll simulate the process.
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    if (email && password) {
-      // Simulate a successful login by creating a dummy JWT.
-      // A real token would be returned from the server.
-      const dummyToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFmcm9uYXV0IiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c';
-      onLogin(dummyToken);
-    } else {
-      setError('Please provide valid credentials to interface with the system.');
+    try {
+      // Use the authService to perform a real login request.
+      const { token } = await login(email, password);
+      onLogin(token);
+    } catch (err) {
+      if (err instanceof Error) {
+          setError(err.message);
+      } else {
+          setError('An unknown authentication error occurred.');
+      }
       setLoading(false);
     }
   };
