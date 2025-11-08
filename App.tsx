@@ -80,7 +80,7 @@ const App: React.FC = () => {
       console.log("Feedback Loop Data (for internal use):", result.feedback_loop_data);
     } catch (err) {
       console.error(err);
-      setError('The Alien Intelligence encountered a cosmic interference. Please check your inputs and try again.');
+      setError('The connection to the cultural engine failed. Please check your inputs and try again.');
     } finally {
       setLoading(false);
     }
